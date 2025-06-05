@@ -1,6 +1,7 @@
 package main
 
 // go run main.go "noticias mundo da tecnologia"
+// mudar nome arquivo para .go e remover o outro main... Preguiça de criar dois projetos
 
 import (
 	"encoding/json"
