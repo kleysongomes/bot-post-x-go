@@ -1,0 +1,106 @@
+package main
+
+// go run main.go "noticias mundo da tecnologia"
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
+)
+
+func main() {
+	// Carrega variáveis de ambiente do arquivo .env
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Aviso: Não foi possível carregar o arquivo .env. Usando variáveis do ambiente.")
+	}
+
+	// Lê a query de busca da linha de comando
+	if len(os.Args) < 2 {
+		fmt.Println("Uso: go run main.go [query de busca]")
+		return
+	}
+	query := strings.Join(os.Args[1:], " ")
+
+	// Pega a chave da SerpAPI
+	serpAPIKey := os.Getenv("SERPAPI_KEY")
+	if serpAPIKey == "" {
+		fmt.Println("Erro: defina a variável de ambiente SERPAPI_KEY no .env com sua chave da SerpAPI.")
+		return
+	}
+
+	fmt.Println("Buscando por:", query)
+	err = GenerateTweetsFileFromSearch(query, serpAPIKey)
+	if err != nil {
+		fmt.Println("Erro ao gerar tweets:", err)
+		return
+	}
+
+	fmt.Println("Arquivo tweets.txt criado com os tweets gerados.")
+}
+
+// GenerateTweetsFileFromSearch busca notícias no Google News (via SerpAPI) e gera tweets
+func GenerateTweetsFileFromSearch(query, serpAPIKey string) error {
+	encodedQuery := url.QueryEscape(query)
+	apiURL := fmt.Sprintf("https://serpapi.com/search.json?engine=google_news&q=%s&api_key=%s", encodedQuery, serpAPIKey)
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("Status HTTP %d da SerpAPI", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return err
+	}
+
+	var tweets []string
+	if newsResults, ok := result["news_results"].([]interface{}); ok {
+		count := 0
+		for _, item := range newsResults {
+			if count >= 10 {
+				break
+			}
+			if res, ok := item.(map[string]interface{}); ok {
+				title, _ := res["title"].(string)
+				snippet, _ := res["snippet"].(string)
+
+				tweet := fmt.Sprintf("%s — %s", title, snippet)
+				if len(tweet) > 280 {
+					tweet = tweet[:277] + "..."
+				}
+				tweets = append(tweets, tweet)
+				count++
+			}
+		}
+	}
+
+	if len(tweets) == 0 {
+		tweets = append(tweets, "Nenhuma notícia relevante encontrada.")
+	}
+
+	file, err := os.Create("tweets.txt")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(strings.Join(tweets, "\n"))
+	return err
+}
