@@ -93,7 +93,7 @@ func main() {
 	}
 
 	// Intervalo entre tweets (ajuste se quiser)
-	interval := 60 * time.Minute
+	interval := 30 * time.Minute
 
 	// Posta tweets um a um com intervalo
 	for i, tweet := range tweets {
