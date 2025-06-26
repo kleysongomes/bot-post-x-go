@@ -94,10 +94,10 @@ Após autorizar, ele começará a postar os tweets com intervalo de segurança.
 
 ## ⏱️ Intervalo entre tweets
 
-O intervalo entre cada postagem é de **10 minutos**, configurado dentro do `post.go`:
+O intervalo entre cada postagem é de **1 hora**, configurado dentro do `post.go`:
 
 ```go
-interval := 10 * time.Minute
+interval := 60 * time.Minute
 ```
 
 Você pode ajustar esse valor conforme desejar.
