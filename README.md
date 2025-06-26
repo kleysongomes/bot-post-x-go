@@ -6,11 +6,17 @@ Um bot em Go que:
 ✅ Lê o arquivo tweets.txt e posta automaticamente no X (Twitter) via API v2 com OAuth 2.0 PKCE
 
 bot-post-x-go/
+
 ├── main.go         // Controla a execução: busca ou postagem
+
 ├── search.go       // Faz busca no SerpAPI e cria o tweets.txt
+
 ├── post.go         // Lê tweets.txt e posta no X/Twitter com OAuth 2.0 PKCE
+
 ├── tweets.txt      // Arquivo de saída com os tweets gerados (um por linha)
+
 ├── .env            // Variáveis de ambiente (não subir isso para o GitHub)
+
 └── README.md       // Este arquivo
 
 ✅ Pré-requisitos
